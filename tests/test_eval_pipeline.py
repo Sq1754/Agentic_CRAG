@@ -1,4 +1,5 @@
 import asyncio
+import hashlib
 import json
 import os
 import time
@@ -13,8 +14,14 @@ from langchain_groq import ChatGroq
 from src.config import settings
 from src.graph.nodes import CRAGNodes
 from src.graph.workflow import build_crag_graph
+from src.models import DocumentChunk
 from src.retrieval.reranker import CrossEncoderReranker
 from src.retrieval.vector_store import HybridRetriever
+
+BENCHMARK_CORPUS = [
+    "Database connection pooling is handled by PgBouncer configured in transaction mode.",
+    "Max client connections are capped at 5000 with a default pool size of 20 per database user.",
+]
 
 
 class GroqEvalLLM(DeepEvalBaseLLM):
@@ -36,11 +43,10 @@ class GroqEvalLLM(DeepEvalBaseLLM):
             try:
                 res = self.llm.invoke(prompt)
                 return str(res.content)
-            except RateLimitError as e:
+            except RateLimitError:
                 sleep_sec = 2 * (attempt + 1)
                 print(f"\n[RateLimit on generate] Backing off for {sleep_sec}s...")
                 time.sleep(sleep_sec)
-        # Final fallback attempt
         res = self.llm.invoke(prompt)
         return str(res.content)
 
@@ -49,7 +55,7 @@ class GroqEvalLLM(DeepEvalBaseLLM):
             try:
                 res = await self.llm.ainvoke(prompt)
                 return str(res.content)
-            except RateLimitError as e:
+            except RateLimitError:
                 sleep_sec = 2 * (attempt + 1)
                 print(f"\n[RateLimit on a_generate] Backing off for {sleep_sec}s...")
                 await asyncio.sleep(sleep_sec)
@@ -66,13 +72,31 @@ def eval_llm():
 
 
 @pytest.fixture(scope="session")
-def pipeline():
-    retriever = HybridRetriever(
+def retriever():
+    """Initializes and seeds the retriever once per test session."""
+    r = HybridRetriever(
         qdrant_host=settings.qdrant_host,
         qdrant_port=settings.qdrant_port,
         collection_name=settings.qdrant_collection,
         dense_model_name=settings.dense_model,
     )
+    tenant_id = "team_infra"
+    chunks = [
+        DocumentChunk(
+            chunk_id=hashlib.sha256(f"{tenant_id}_{doc}".encode()).hexdigest()[:16],
+            doc_id=f"doc_{i}",
+            tenant_id=tenant_id,
+            content=doc,
+        )
+        for i, doc in enumerate(BENCHMARK_CORPUS)
+    ]
+    r.index_chunks(tenant_id, chunks)
+    return r
+
+
+@pytest.fixture(scope="session")
+def pipeline(retriever):
+    """Builds the CRAG graph using the seeded retriever."""
     reranker = CrossEncoderReranker(model_name=settings.reranker_model)
     nodes = CRAGNodes(
         retriever=retriever,
@@ -109,7 +133,7 @@ def test_crag_quality_gate(pipeline, eval_llm, case):
     assert len(retrieval_contexts) > 0, f"No documents retrieved for query: {case['query']}"
     assert any(
         case["context_expected_snippet"] in c for c in retrieval_contexts
-    ), "Expected golden snippet was not found in retrieved contexts."
+    ), f"Expected snippet '{case['context_expected_snippet']}' not found in: {retrieval_contexts}"
 
     test_case = LLMTestCase(
         input=case["query"],
@@ -123,5 +147,5 @@ def test_crag_quality_gate(pipeline, eval_llm, case):
 
     assert_test(test_case, [faithfulness_metric, relevancy_metric])
 
-    # Pacing buffer to avoid rate limit spikes on subsequent cases
+    # Cooldown buffer to avoid rate-limiting between test cases
     time.sleep(4)
