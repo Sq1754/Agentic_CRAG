@@ -1,0 +1,29 @@
+agentic-crag/
+├── .github/
+│   └── workflows/
+│       └── eval-gate.yml         # CI/CD eval pipeline
+├── docker-compose.yml             # Local Qdrant & Redis
+├── pyproject.toml                 # Dependencies & build configuration
+├── data/
+│   └── sample_docs/               # Raw corpus for testing
+├── tests/
+│   ├── test_retrieval.py          # Precision & Recall unit tests
+│   └── eval_pipeline.py           # DeepEval CI/CD test runner
+└── src/
+    ├── __init__.py
+    ├── config.py                  # Pydantic Settings
+    ├── models.py                  # State schemas & Pydantic models
+    ├── retrieval/
+    │   ├── __init__.py
+    │   ├── embedder.py            # Dense embedding generator
+    │   ├── vector_store.py        # Qdrant client wrapper & payload filters
+    │   └── reranker.py            # Cross-encoder scoring
+    ├── graph/
+    │   ├── __init__.py
+    │   ├── state.py               # TypedDict LangGraph state
+    │   ├── nodes.py               # Node functions (rewrite, grade, generate)
+    │   ├── edges.py               # Conditional routing logic
+    │   └── workflow.py            # Compiled StateGraph
+    └── api/
+        ├── __init__.py
+        └── main.py                # FastAPI endpoints

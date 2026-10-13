@@ -1,0 +1,20 @@
+[
+  {
+    "query": "What is our connection pool limit per user?",
+    "tenant_id": "team_infra",
+    "context_expected_snippet": "pool size of 20 per database user",
+    "ground_truth": "The default connection pool size is 20 per database user."
+  },
+  {
+    "query": "How is database connection pooling handled?",
+    "tenant_id": "team_infra",
+    "context_expected_snippet": "handled by PgBouncer configured in transaction mode",
+    "ground_truth": "Connection pooling is managed using PgBouncer in transaction mode."
+  },
+  {
+    "query": "What is the maximum limit for client connections?",
+    "tenant_id": "team_infra",
+    "context_expected_snippet": "Max client connections are capped at 5000",
+    "ground_truth": "Max client connections are capped at 5000."
+  }
+]

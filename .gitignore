@@ -1,0 +1,34 @@
+# Environment Variables & Secrets
+.env
+.env.*
+!.env.example
+
+# Vector Database Storage & Local State
+qdrant_storage/
+
+# Python Cache & Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+
+# Testing & Evaluation Caches
+.pytest_cache/
+.deepeval/
+.coverage
+htmlcov/
+
+# IDE & Editor Settings
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
