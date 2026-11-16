@@ -1,3 +1,4 @@
+import hashlib
 import math
 from typing import List
 import numpy as np
@@ -62,7 +63,7 @@ class HybridRetriever:
         # 1. Ingest into Qdrant with tenant payload
         points = [
             qmodels.PointStruct(
-                id=hash(chunk.chunk_id) % (2**63 - 1),  # Integer point ID
+                id=int(hashlib.sha256(chunk.chunk_id.encode()).hexdigest(), 16) % (2**63 - 1),  # Deterministic point ID
                 vector=embeddings[i].tolist(),
                 payload={
                     "chunk_id": chunk.chunk_id,
@@ -190,3 +191,4 @@ class HybridRetriever:
                 )
             )
         return merged
+

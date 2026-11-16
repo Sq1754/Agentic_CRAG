@@ -32,3 +32,18 @@ htmlcov/
 
 # Logs
 *.log
+
+# Uploaded Documents (local dev)
+uploads/
+
+# Node.js (Frontend)
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+
+# PostgreSQL data (if local)
+postgres_data/
+
+# OS Files
+Thumbs.db
+.DS_Store
