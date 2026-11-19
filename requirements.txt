@@ -5,8 +5,9 @@ sse-starlette>=2.1.0
 python-multipart>=0.0.9
 
 # === Data Validation & Settings ===
-pydantic>=2.8.0
+pydantic[email]>=2.8.0
 pydantic-settings>=2.4.0
+email-validator>=2.1.0
 
 # === Database (PostgreSQL + ORM) ===
 sqlalchemy>=2.0.0
