@@ -6,9 +6,11 @@ class Settings(BaseSettings):
     env: str = "development"
     debug: bool = False
 
-    # Qdrant
+    # Qdrant (local: set qdrant_host/port; cloud: set qdrant_url + qdrant_api_key)
     qdrant_host: str = "localhost"
     qdrant_port: int = 6333
+    qdrant_url: str = ""           # e.g. https://xxxx.us-east4-0.gcp.cloud.qdrant.io
+    qdrant_api_key: str = ""       # required for Qdrant Cloud
     qdrant_collection: str = "tenant_corpus"
 
     # PostgreSQL
@@ -25,7 +27,7 @@ class Settings(BaseSettings):
     groq_model: str = "openai/gpt-oss-20b"
     groq_api_key: str = ""
 
-    # File Upload
+    # File Upload (use /tmp/uploads on ephemeral cloud hosting like Render)
     max_upload_size_mb: int = 20
     upload_dir: str = "./uploads"
 

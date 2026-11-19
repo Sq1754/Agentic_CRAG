@@ -41,6 +41,8 @@ async def lifespan(app: FastAPI):
     retriever = HybridRetriever(
         qdrant_host=settings.qdrant_host,
         qdrant_port=settings.qdrant_port,
+        qdrant_url=settings.qdrant_url,
+        qdrant_api_key=settings.qdrant_api_key,
         collection_name=settings.qdrant_collection,
         dense_model_name=settings.dense_model,
     )

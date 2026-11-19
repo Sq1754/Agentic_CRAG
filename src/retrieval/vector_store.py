@@ -17,11 +17,16 @@ class HybridRetriever:
         self,
         qdrant_host: str = "localhost",
         qdrant_port: int = 6333,
+        qdrant_url: str = "",
+        qdrant_api_key: str = "",
         collection_name: str = "tenant_corpus",
         dense_model_name: str = "BAAI/bge-small-en-v1.5",
     ):
-        # Set check_compatibility=False to silence server minor version differences
-        self.client = QdrantClient(host=qdrant_host, port=qdrant_port, check_compatibility=False)
+        # Prefer HTTPS URL (Qdrant Cloud) over host/port (local)
+        if qdrant_url:
+            self.client = QdrantClient(url=qdrant_url, api_key=qdrant_api_key or None, check_compatibility=False)
+        else:
+            self.client = QdrantClient(host=qdrant_host, port=qdrant_port, check_compatibility=False)
         self.collection_name = collection_name
         self.dense_model = SentenceTransformer(dense_model_name)
         # Use get_embedding_dimension instead of the deprecated get_sentence_embedding_dimension
